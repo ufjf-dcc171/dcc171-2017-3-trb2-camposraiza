@@ -1,14 +1,19 @@
 package trabalho;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+
 class Pedido {
 
-    private int mesa;
-    private Date data;
-    private Date termino;
+    private int mesa;    
+    private Long data;
+    private Long termino;
     private boolean status;
     private List<ItemPedido> itens;
 
@@ -16,11 +21,11 @@ class Pedido {
 
     }
 
-    public Pedido(int mesa, Date data) {
+    public Pedido(int mesa, Long data) {
         this.mesa = mesa;
         this.data = data;
         this.status = true;
-        Date termino;
+        Long termino;
         this.termino = null;
         this.itens = new ArrayList<>();
     }
@@ -41,19 +46,19 @@ class Pedido {
         this.mesa = mesa;
     }
 
-    public Date getData() {
+    public Long getData() {
         return data;
     }
 
-    public void setData(Date data) {
+    public void setData(Long data) {
         this.data = data;
     }
 
-    public Date getTermino() {
+    public Long getTermino() {
         return termino;
     }
 
-    public void setTermino(Date termino) {
+    public void setTermino(Long termino) {
         this.termino = termino;
     }
 
@@ -79,17 +84,22 @@ class Pedido {
             statusConvertido = "Fechado";
         }
 
-        String horaTermino;
+      /* String horaTermino;
         if (termino != null) {
-            horaTermino = termino.getHours() + ":" + termino.getMinutes();
+            horaTermino = termino.getTime();
         } else {
             horaTermino = " Pedido aberto";
-        }
-        String detalhePedido = "Pedido{" + "mesa= " + mesa + ", status= " + statusConvertido + ", abertura= " + data.getHours() + ":" + data.getMinutes() + " término= " + horaTermino + '}';
+        }*/
+        
+        
+        String detalhePedido = "Pedido{" + "mesa= " + mesa + ", status= " + statusConvertido + ", abertura= " + new Date(data)+ " término= " + termino + '}';
+        
         for (ItemPedido p : this.itens) {
             detalhePedido += System.lineSeparator() + "   - " + p.getItem().getNome() + "(" + p.getQuantidade() + ")";
         }
         return detalhePedido;
     }
+    
+ 
 
 }

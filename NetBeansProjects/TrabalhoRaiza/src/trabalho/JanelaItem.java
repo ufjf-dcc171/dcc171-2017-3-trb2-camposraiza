@@ -21,9 +21,10 @@ public class JanelaItem extends JFrame {
 
     private final List<Item> itens = new ArrayList<Item>();
     private JComboBox<Item> jComboBox = new JComboBox();
-    private final JButton btAdicionaItem = new JButton("Adicionar Item");
+    private final JButton btAdicionaItem = new JButton("OK");
+    private final JButton btExcluirItem = new JButton("Excluir Item");
     private final JButton btCancelar = new JButton("Cancelar");
-     private final JLabel lbQuantidade = new JLabel("Quantidade");
+    private final JLabel lbQuantidade = new JLabel("Quantidade");
     private JTextField txQuantidade = new JTextField("");
     private Pedido selectedPedido;
     private JList<Pedido> lstPedidos; 
@@ -38,11 +39,12 @@ public class JanelaItem extends JFrame {
         pComboBox.add(jComboBox);
         add(pComboBox, BorderLayout.CENTER);
 
-        this.setTitle("Inserir Itens");
+        this.setTitle("Inserir/Remover Item");
        
 
         add(botoes, BorderLayout.SOUTH);
         botoes.add(btAdicionaItem);
+        botoes.add(btExcluirItem);
         botoes.add(btCancelar);
 
         jComboBox.setModel(new ItemListModel());
@@ -68,8 +70,23 @@ public class JanelaItem extends JFrame {
                 
             }
         });
-
-    }
+        
+        btExcluirItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (lstPedidos.isSelectionEmpty()) {
+                    return;
+                }
+                
+               // pedidos.remove(lstPedidos.getSelectedValue());
+                
+                lstPedidos.updateUI();
+                ji.setVisible(false);
+                
+            }
+        });
+        
+        }
     
     public void setListPedidos (JList<Pedido> lstPedidos) {
         this.lstPedidos = lstPedidos;

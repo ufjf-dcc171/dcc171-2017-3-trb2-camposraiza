@@ -14,9 +14,14 @@ public class ItemListModel implements ListModel<Item>, ComboBoxModel<Item> {
     private Item selectedItem;
 
     public ItemListModel() {
-        this.itens = Arrays.asList(new Item[]{new Item("refrigerante", 2.00), new Item("salgado", 3.00)});
+        this.itens = Arrays.asList(new Item[]{new Item("refrigerante", 2.00), new Item("salgado", 3.00), new Item("suco", 2.00), new Item("sanduíche", 5.00), new Item("bala", 0.10), new Item("brigadeiro", 1.00)});
         this.dataLinisters = new ArrayList();
     }
+    
+    /* public ItemListModel(List<Item>itens) {
+        this.itens = itens;
+        this.dataLinisters = new ArrayList();
+    }*/
 
     public int getSize() {
         return itens.size();

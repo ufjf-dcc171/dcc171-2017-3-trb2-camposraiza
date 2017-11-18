@@ -4,6 +4,13 @@ import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -27,17 +34,21 @@ import javax.swing.event.ListSelectionListener;
 class JanelaPedido extends JFrame {
 
     private final List<Pedido> pedidos = new ArrayList<Pedido>();
-    private final JButton btCriaPedido = new JButton("Cria Pedido");
-    private final JButton btAdicionaItem = new JButton("Adiciona Item");
-    private final JButton btEditaPedido = new JButton("Edita Pedido");
-    private final JButton btExcluiPedido = new JButton("Exclui Pedido");
+    private final JButton btCriaPedido = new JButton("Criar Pedido");
+    private final JButton btAdicionaItem = new JButton("Inserir/Remover Item");
+    private final JButton btEncerraPedido = new JButton("Encerrar Pedido");
+    private final JButton btGravaPedido = new JButton("Salvar");
+    private final JButton btSelecionaPedido = new JButton("Abrir Pedidos Anteriores");
+    private final JButton btExcluiPedido = new JButton("Excluir Pedido");
     private final JLabel lbMesa = new JLabel("Número da mesa");
     private JTextField txMesa = new JTextField("");
     private JTextField txStatus = new JTextField("Status: Aberto");
-    private JTextField txData = new JTextField("");
-    private final JLabel lbData = new JLabel("Horário de abertura (HH:mm)");
-    private JTextField txTermino = new JTextField("");
-    private final JLabel lbTermino = new JLabel("Horário de fechamento (HH:mm)");
+    private JTextField txAbertura = new JTextField("--:--");
+    private Date txData = new Date();
+    private final JLabel lbData = new JLabel("Horário de abertura");
+    private JTextField txTermino = new JTextField("--:--");
+    private final JLabel lbTermino = new JLabel("Horário de fechamento");
+    private Date txDataFim = new Date();
     private final JList<Pedido> lstPedidos = new JList<Pedido>(new DefaultListModel<>());
 
     private JanelaItem janela = new JanelaItem();
@@ -57,17 +68,78 @@ class JanelaPedido extends JFrame {
         edits.add(txStatus);
         txStatus.setEnabled(false);
         edits.add(lbData);
-        edits.add(txData);
+        edits.add(txAbertura);
+        txAbertura.setEnabled(false);
         edits.add(lbTermino);
         edits.add(txTermino);
+        txTermino.setEnabled(false);
         add(botoes, BorderLayout.SOUTH);
         botoes.add(btCriaPedido);
         botoes.add(btAdicionaItem);
-        botoes.add(btEditaPedido);
+        botoes.add(btEncerraPedido);
         botoes.add(btExcluiPedido);
+        botoes.add(btGravaPedido);
+        botoes.add(btSelecionaPedido);
 
         add(new JScrollPane(lstPedidos), BorderLayout.EAST);
 
+        btGravaPedido.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                FileWriter arquivo = null;
+                try {
+                    arquivo = new FileWriter("/home/raiza/Transferências/file.txt", true);
+                    PrintWriter gravarArquivo = new PrintWriter(arquivo);
+                    for (Pedido p : pedidos) {
+                        gravarArquivo.println(p);
+                    }
+                    arquivo.flush(); //libera a gravaçao
+                    arquivo.close(); //fecha o arquivo
+                } catch (IOException ex) {
+                    Logger.getLogger(JanelaPedido.class.getName()).log(Level.SEVERE, null, ex);
+                } finally {
+                    try {
+                        arquivo.close();
+                    } catch (IOException ex) {
+                        Logger.getLogger(JanelaPedido.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        });
+        
+        btSelecionaPedido.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                FileReader arq = null;
+                try {
+                    String linha = "a";
+                    arq = new FileReader("/home/raiza/Transferências/file.txt");
+                    //armazenando conteudo no arquivo no buffer
+                    BufferedReader lerArq = new BufferedReader(arq);
+                    //lendo a primeira linha
+                    //String linha = lerArq.readLine();
+                    //a variavel linha recebe o valor 'null' quando chegar no final do arquivo
+                    while (linha != null) {
+                        System.out.printf("%s\n", linha);
+                        //lendo a segundo até a última
+                        linha = lerArq.readLine();                        
+                    }   arq.close();
+                } catch (FileNotFoundException ex) {
+                    Logger.getLogger(JanelaPedido.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IOException ex) {
+                    Logger.getLogger(JanelaPedido.class.getName()).log(Level.SEVERE, null, ex);
+                } finally {
+                    try {
+                        arq.close();
+                    } catch (IOException ex) {
+                        Logger.getLogger(JanelaPedido.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        });
+        
+        
         btCriaPedido.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -79,21 +151,23 @@ class JanelaPedido extends JFrame {
                     s.format(data);
                     s.format(termino);
                     s.setLenient(false);
-                    if (txTermino.getText().equals("")) {
+                    /*if (txTermino.getText().isEmpty()) {
                         termino = null; // Fechamento vazio;
 
-                    }
+                    }*/
 
-                    Pedido p = new Pedido(mesa, s.parse(txData.getText()));
+                    Pedido p = new Pedido(mesa, txData.getTime());
+
+                    txAbertura.setText(txData.toString());
                     pedidos.add(p);
 
                     txMesa.setText(""); //retorna as mensagens para default
                     txStatus.setText("");
                     txStatus.setEnabled(false); //deixa o status bloquado enquanto o pedido está aberto
-                    txData.setText("");
+                    txAbertura.setText("");
                     txTermino.setText("");
                     lstPedidos.updateUI();
-                } catch (NumberFormatException | ParseException ex) { //verifica formatação dos dados
+                } catch (NumberFormatException ex) { //verifica formatação dos dados
                     JOptionPane.showMessageDialog(null, "Não foi possível criar o pedido. Favor verificar se todos os campos foram corretamente preechidos.");
                 }
             }
@@ -114,7 +188,7 @@ class JanelaPedido extends JFrame {
                 janela.setListPedidos(lstPedidos);
                 janela.setSize(500, 500);
                 janela.setLocationRelativeTo(null);
-                janela.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                janela.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE); //faz o X só esconder
                 janela.setVisible(true);
             }
         });
@@ -129,7 +203,45 @@ class JanelaPedido extends JFrame {
                 lstPedidos.updateUI();
             }
         });
-        btEditaPedido.addActionListener(new ActionListener() {
+
+        btEncerraPedido.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (lstPedidos.isSelectionEmpty()) {
+                    return;
+                }
+                Pedido p = pedidos.get(lstPedidos.getSelectedIndex());
+                if (p.getStatus()) { //verifica se o status está Aberto                
+                    try {
+                        p.setTermino(txDataFim.getTime());
+                        JOptionPane.showMessageDialog(null, txDataFim);
+                    } catch (Exception ex) {
+                        Logger.getLogger(JanelaPedido.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    if (p.getTermino() != null) {
+                        p.setStatus(false);
+                    }
+
+                    txMesa.setText(""); //retorna mensagens para default
+                    txStatus.setText("Status: Aberto");
+                    txStatus.setEnabled(false);
+                    txAbertura.setEnabled(false);
+                    txTermino.setEnabled(false);
+
+                    lstPedidos.updateUI();
+
+                } else {
+                    txMesa.setText(""); //se o pedido estiver fechado, mostra mensagem de erro
+                    txStatus.setText("");
+                    txStatus.setEnabled(false);
+                    txAbertura.setText("");
+                    txTermino.setText("");
+                    JOptionPane.showMessageDialog(null, "O pedido está fechado, não pode ser alterado");
+                }
+            }
+        });
+
+        /*btEditaPedido.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (lstPedidos.isSelectionEmpty()) {
@@ -145,7 +257,7 @@ class JanelaPedido extends JFrame {
                     s.format(termino);
                     s.setLenient(false);
                     try {
-                        p.setData(s.parse(txData.getText()));
+                        p.setData(s.parse(txData.getText()));                        
                         p.setTermino(s.parse(txTermino.getText()));
                     } catch (ParseException ex) {
                         Logger.getLogger(JanelaPedido.class.getName()).log(Level.SEVERE, null, ex);
@@ -157,7 +269,7 @@ class JanelaPedido extends JFrame {
                     txMesa.setText(""); //retorna mensagens para default
                     txStatus.setText("Status: Aberto");
                     txStatus.setEnabled(false);
-                    txData.setText("");
+                    txAbertura.setText("");
                     txTermino.setText("");
 
                     lstPedidos.updateUI();
@@ -165,12 +277,12 @@ class JanelaPedido extends JFrame {
                     txMesa.setText(""); //se o pedido estiver fechado, mostra mensagem de erro
                     txStatus.setText("");
                     txStatus.setEnabled(false);
-                    txData.setText("");
+                    txAbertura.setText("");
                     txTermino.setText("");
                     JOptionPane.showMessageDialog(null, "O pedido está fechado, não pode ser editado");
                 }
             }
-        });
+        });*/
         lstPedidos.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
@@ -188,7 +300,7 @@ class JanelaPedido extends JFrame {
                     SimpleDateFormat s = new SimpleDateFormat("HH:mm");
 
                     s.setLenient(false);
-                    txData.setText(s.format(selecionada.getData()));
+                    txAbertura.setText(s.format(selecionada.getData()));
                     if (selecionada.getTermino() != null) {
                         txTermino.setText(s.format(selecionada.getTermino()));
                     }
