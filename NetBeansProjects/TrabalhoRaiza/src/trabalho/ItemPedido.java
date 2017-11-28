@@ -2,6 +2,8 @@ package trabalho;
 
 public class ItemPedido {
 
+    public ItemPedido(){}
+    
     public ItemPedido(Item item, Pedido pedido, int quantidade) {
         this.item = item;
         this.pedido = pedido;

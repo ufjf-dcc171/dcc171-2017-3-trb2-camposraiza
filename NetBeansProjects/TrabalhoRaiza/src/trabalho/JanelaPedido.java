@@ -26,6 +26,7 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
@@ -36,9 +37,7 @@ class JanelaPedido extends JFrame {
     private final List<Pedido> pedidos = new ArrayList<Pedido>();
     private final JButton btCriaPedido = new JButton("Criar Pedido");
     private final JButton btAdicionaItem = new JButton("Inserir/Remover Item");
-    private final JButton btEncerraPedido = new JButton("Encerrar Pedido");
-    private final JButton btGravaPedido = new JButton("Salvar");
-    private final JButton btSelecionaPedido = new JButton("Abrir Pedidos Anteriores");
+    private final JButton btEncerraPedido = new JButton("Encerrar Pedido");    
     private final JButton btExcluiPedido = new JButton("Excluir Pedido");
     private final JLabel lbMesa = new JLabel("Número da mesa");
     private JTextField txMesa = new JTextField("");
@@ -50,6 +49,7 @@ class JanelaPedido extends JFrame {
     private final JLabel lbTermino = new JLabel("Horário de fechamento");
     private Date txDataFim = new Date();
     private final JList<Pedido> lstPedidos = new JList<Pedido>(new DefaultListModel<>());
+
 
     private JanelaItem janela = new JanelaItem();
 
@@ -77,69 +77,11 @@ class JanelaPedido extends JFrame {
         botoes.add(btCriaPedido);
         botoes.add(btAdicionaItem);
         botoes.add(btEncerraPedido);
-        botoes.add(btExcluiPedido);
-        botoes.add(btGravaPedido);
-        botoes.add(btSelecionaPedido);
-
-        add(new JScrollPane(lstPedidos), BorderLayout.EAST);
-
-        btGravaPedido.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-
-                FileWriter arquivo = null;
-                try {
-                    arquivo = new FileWriter("/home/raiza/Transferências/file.txt", true);
-                    PrintWriter gravarArquivo = new PrintWriter(arquivo);
-                    for (Pedido p : pedidos) {
-                        gravarArquivo.println(p);
-                    }
-                    arquivo.flush(); //libera a gravaçao
-                    arquivo.close(); //fecha o arquivo
-                } catch (IOException ex) {
-                    Logger.getLogger(JanelaPedido.class.getName()).log(Level.SEVERE, null, ex);
-                } finally {
-                    try {
-                        arquivo.close();
-                    } catch (IOException ex) {
-                        Logger.getLogger(JanelaPedido.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-            }
-        });
-        
-        btSelecionaPedido.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                FileReader arq = null;
-                try {
-                    String linha = "a";
-                    arq = new FileReader("/home/raiza/Transferências/file.txt");
-                    //armazenando conteudo no arquivo no buffer
-                    BufferedReader lerArq = new BufferedReader(arq);
-                    //lendo a primeira linha
-                    //String linha = lerArq.readLine();
-                    //a variavel linha recebe o valor 'null' quando chegar no final do arquivo
-                    while (linha != null) {
-                        System.out.printf("%s\n", linha);
-                        //lendo a segundo até a última
-                        linha = lerArq.readLine();                        
-                    }   arq.close();
-                } catch (FileNotFoundException ex) {
-                    Logger.getLogger(JanelaPedido.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (IOException ex) {
-                    Logger.getLogger(JanelaPedido.class.getName()).log(Level.SEVERE, null, ex);
-                } finally {
-                    try {
-                        arq.close();
-                    } catch (IOException ex) {
-                        Logger.getLogger(JanelaPedido.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-            }
-        });
-        
-        
+        botoes.add(btExcluiPedido);        
+       
+        add(new JScrollPane(lstPedidos), BorderLayout.EAST);    
+                 
+              
         btCriaPedido.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -166,7 +108,8 @@ class JanelaPedido extends JFrame {
                     txStatus.setEnabled(false); //deixa o status bloquado enquanto o pedido está aberto
                     txAbertura.setText("");
                     txTermino.setText("");
-                    lstPedidos.updateUI();
+                    lstPedidos.updateUI();                    
+                    salvaEvento();
                 } catch (NumberFormatException ex) { //verifica formatação dos dados
                     JOptionPane.showMessageDialog(null, "Não foi possível criar o pedido. Favor verificar se todos os campos foram corretamente preechidos.");
                 }
@@ -190,6 +133,7 @@ class JanelaPedido extends JFrame {
                 janela.setLocationRelativeTo(null);
                 janela.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE); //faz o X só esconder
                 janela.setVisible(true);
+                salvaEvento();
             }
         });
 
@@ -201,6 +145,7 @@ class JanelaPedido extends JFrame {
                 }
                 pedidos.remove(lstPedidos.getSelectedValue());
                 lstPedidos.updateUI();
+                salvaEvento();
             }
         });
 
@@ -214,7 +159,8 @@ class JanelaPedido extends JFrame {
                 if (p.getStatus()) { //verifica se o status está Aberto                
                     try {
                         p.setTermino(txDataFim.getTime());
-                        JOptionPane.showMessageDialog(null, txDataFim);
+                        JOptionPane.showMessageDialog(null, "Pedido encerrado com sucesso!");
+                        arquivoPedidos();
                     } catch (Exception ex) {
                         Logger.getLogger(JanelaPedido.class.getName()).log(Level.SEVERE, null, ex);
                     }
@@ -238,6 +184,7 @@ class JanelaPedido extends JFrame {
                     txTermino.setText("");
                     JOptionPane.showMessageDialog(null, "O pedido está fechado, não pode ser alterado");
                 }
+                salvaEvento();
             }
         });
 
@@ -305,9 +252,62 @@ class JanelaPedido extends JFrame {
                         txTermino.setText(s.format(selecionada.getTermino()));
                     }
                 } else {
+                    
                     lstPedidos.setModel(new DefaultListModel<>());
+                   
                 }
+                salvaEvento();
             }
         });
+        
+         
     }
+    public void salvaEvento() {
+                FileWriter arquivo = null;
+                try {
+                    arquivo = new FileWriter("/home/raiza/Transferências/file.txt", true);
+                    PrintWriter gravarArquivo = new PrintWriter(arquivo);
+                    for (Pedido p : pedidos) {
+                        gravarArquivo.println(p);
+                    }
+                    arquivo.flush(); //libera a gravaçao
+                    arquivo.close(); //fecha o arquivo
+                } catch (IOException ex) {
+                    Logger.getLogger(JanelaPedido.class.getName()).log(Level.SEVERE, null, ex);
+                } finally {
+                    try {
+                        arquivo.close();
+                    } catch (IOException ex) {
+                        Logger.getLogger(JanelaPedido.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+    
+     public void arquivoPedidos() {
+                FileReader arq = null;
+                try {
+                    String linha = "a";
+                    arq = new FileReader("/home/raiza/Transferências/file.txt");
+                    //armazenando conteudo no arquivo no buffer
+                    BufferedReader lerArq = new BufferedReader(arq);
+                    
+                    //a variavel linha recebe o valor 'null' quando chegar no final do arquivo
+                    while (linha != null) {
+                        System.out.printf("%s\n", linha);
+                        //lendo a segundo até a última
+                        linha = lerArq.readLine();                        
+                    }   arq.close();
+                } catch (FileNotFoundException ex) {
+                    Logger.getLogger(JanelaPedido.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IOException ex) {
+                    Logger.getLogger(JanelaPedido.class.getName()).log(Level.SEVERE, null, ex);
+                } finally {
+                    try {
+                        arq.close();
+                    } catch (IOException ex) {
+                        Logger.getLogger(JanelaPedido.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
 }
+

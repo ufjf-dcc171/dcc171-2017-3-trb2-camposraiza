@@ -7,6 +7,7 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.ComboBoxEditor;
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -28,11 +29,15 @@ public class JanelaItem extends JFrame {
     private JTextField txQuantidade = new JTextField("");
     private Pedido selectedPedido;
     private JList<Pedido> lstPedidos; 
+    private final JList<Item> lstItens = new JList<Item>(new DefaultListModel<>());
 
     
     
     public JanelaItem() {
-
+        
+        lstItens.setModel(new ItemListModel(itens));
+        lstItens.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        
         JPanel botoes = new JPanel(new GridLayout(4, 2));
         JPanel edits = new JPanel(new GridLayout(14, 2));
         JPanel pComboBox = new JPanel(new GridLayout(14, 2));
@@ -65,7 +70,7 @@ public class JanelaItem extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 selectedPedido.adicionaItem((Item)jComboBox.getSelectedItem(), Integer.parseInt(txQuantidade.getText()));
-                lstPedidos.updateUI();
+                lstPedidos.updateUI();                
                 ji.setVisible(false);
                 
             }
@@ -74,15 +79,13 @@ public class JanelaItem extends JFrame {
         btExcluirItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (lstPedidos.isSelectionEmpty()) {
+                if (lstItens.isSelectionEmpty()) {
                     return;
-                }
-                
-               // pedidos.remove(lstPedidos.getSelectedValue());
-                
+                }                
+                itens.remove(lstItens.getSelectedValue());                
                 lstPedidos.updateUI();
-                ji.setVisible(false);
-                
+                lstItens.updateUI();
+                                
             }
         });
         

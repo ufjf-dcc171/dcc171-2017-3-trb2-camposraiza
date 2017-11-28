@@ -18,10 +18,10 @@ public class ItemListModel implements ListModel<Item>, ComboBoxModel<Item> {
         this.dataLinisters = new ArrayList();
     }
     
-    /* public ItemListModel(List<Item>itens) {
+     public ItemListModel(List<Item>itens) {
         this.itens = itens;
         this.dataLinisters = new ArrayList();
-    }*/
+    }
 
     public int getSize() {
         return itens.size();

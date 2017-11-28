@@ -1,9 +1,8 @@
 /*hora de sistema entrada OK termino - 1 - atualizar//mostrar; 
 2 - adicionar e remover item; 
-janela texto pedidos; 
+3 - janela texto pedidos; ler na janela ?
 Hora término (botão editar está fechando e editando)! OK
-3 - gravar automático
-4 - ler na janela ?
+gravar automático OK
 */
 
 package trabalho;

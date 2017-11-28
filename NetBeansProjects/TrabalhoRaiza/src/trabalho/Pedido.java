@@ -16,6 +16,7 @@ class Pedido {
     private Long termino;
     private boolean status;
     private List<ItemPedido> itens;
+    private StringBuilder descricao = new StringBuilder();
 
     public Pedido() {
 
@@ -28,6 +29,7 @@ class Pedido {
         Long termino;
         this.termino = null;
         this.itens = new ArrayList<>();
+        this.descricao.append("Descrição do Pedido");
     }
 
     public List<ItemPedido> getItens() {
@@ -82,16 +84,9 @@ class Pedido {
             statusConvertido = "Aberto";
         } else {
             statusConvertido = "Fechado";
-        }
-
-      /* String horaTermino;
-        if (termino != null) {
-            horaTermino = termino.getTime();
-        } else {
-            horaTermino = " Pedido aberto";
-        }*/
-        
-        
+        } 
+               
+      
         String detalhePedido = "Pedido{" + "mesa= " + mesa + ", status= " + statusConvertido + ", abertura= " + new Date(data)+ " término= " + termino + '}';
         
         for (ItemPedido p : this.itens) {
@@ -100,6 +95,9 @@ class Pedido {
         return detalhePedido;
     }
     
+
+    
+ 
  
 
 }
