@@ -1,5 +1,5 @@
-/*hora de sistema entrada OK termino - 1 - atualizar//mostrar; 
-2 - adicionar e remover item; 
+/*hora de sistema OK; 
+2 - adicionar e remover item OK; 
 3 - janela texto pedidos; ler na janela ?
 Hora término (botão editar está fechando e editando)! OK
 gravar automático OK
@@ -16,7 +16,7 @@ import java.io.IOException;
  */
 public class Trabalho {
 
-    public static void main(String[] args)throws IOException  {
+    public static void main(String[] args)throws IOException, Exception  {
         
        
         

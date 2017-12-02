@@ -5,21 +5,30 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -49,11 +58,16 @@ class JanelaPedido extends JFrame {
     private final JLabel lbTermino = new JLabel("Horário de fechamento");
     private Date txDataFim = new Date();
     private final JList<Pedido> lstPedidos = new JList<Pedido>(new DefaultListModel<>());
+ //   private JComboBox<Pedido> jComboBox = new JComboBox();
+    
+
 
 
     private JanelaItem janela = new JanelaItem();
 
     public JanelaPedido() {
+        
+        
 
         lstPedidos.setModel(new PedidoListModel(pedidos));
         lstPedidos.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -79,9 +93,16 @@ class JanelaPedido extends JFrame {
         botoes.add(btEncerraPedido);
         botoes.add(btExcluiPedido);        
        
+       /* JPanel pComboBox = new JPanel(new GridLayout(14, 2));
+        pComboBox.add(jComboBox);
+        add(pComboBox, BorderLayout.SOUTH);*/
+       
+        
         add(new JScrollPane(lstPedidos), BorderLayout.EAST);    
                  
-              
+      LerArquivo();
+        
+        
         btCriaPedido.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -92,15 +113,13 @@ class JanelaPedido extends JFrame {
                     Date termino = new Date();
                     s.format(data);
                     s.format(termino);
-                    s.setLenient(false);
-                    /*if (txTermino.getText().isEmpty()) {
-                        termino = null; // Fechamento vazio;
-
-                    }*/
+                    s.setLenient(false);                
 
                     Pedido p = new Pedido(mesa, txData.getTime());
 
                     txAbertura.setText(txData.toString());
+                    
+                    
                     pedidos.add(p);
 
                     txMesa.setText(""); //retorna as mensagens para default
@@ -133,6 +152,7 @@ class JanelaPedido extends JFrame {
                 janela.setLocationRelativeTo(null);
                 janela.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE); //faz o X só esconder
                 janela.setVisible(true);
+                lstPedidos.updateUI();
                 salvaEvento();
             }
         });
@@ -158,9 +178,19 @@ class JanelaPedido extends JFrame {
                 Pedido p = pedidos.get(lstPedidos.getSelectedIndex());
                 if (p.getStatus()) { //verifica se o status está Aberto                
                     try {
-                        p.setTermino(txDataFim.getTime());
+                        
+                       /* SimpleDateFormat s = new SimpleDateFormat("HH:mm");
+                        Date termino = new Date();
+                        s.format(termino);
+                        s.setLenient(false);*/
+                        
+                        p.setTermino((new Date())); 
+                        
+                        txTermino.setText(txDataFim.toString());
+                    
+                        
                         JOptionPane.showMessageDialog(null, "Pedido encerrado com sucesso!");
-                        arquivoPedidos();
+                        
                     } catch (Exception ex) {
                         Logger.getLogger(JanelaPedido.class.getName()).log(Level.SEVERE, null, ex);
                     }
@@ -188,48 +218,6 @@ class JanelaPedido extends JFrame {
             }
         });
 
-        /*btEditaPedido.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (lstPedidos.isSelectionEmpty()) {
-                    return;
-                }
-                Pedido p = pedidos.get(lstPedidos.getSelectedIndex());
-                if (p.getStatus()) { //verifica se o status está Aberto
-                    p.setMesa(Integer.parseInt(txMesa.getText()));
-                    Date data = new Date();
-                    Date termino = new Date();
-                    SimpleDateFormat s = new SimpleDateFormat("HH:mm");
-                    s.format(data);
-                    s.format(termino);
-                    s.setLenient(false);
-                    try {
-                        p.setData(s.parse(txData.getText()));                        
-                        p.setTermino(s.parse(txTermino.getText()));
-                    } catch (ParseException ex) {
-                        Logger.getLogger(JanelaPedido.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-
-                    if (p.getTermino() != null) {
-                        p.setStatus(false);
-                    }
-                    txMesa.setText(""); //retorna mensagens para default
-                    txStatus.setText("Status: Aberto");
-                    txStatus.setEnabled(false);
-                    txAbertura.setText("");
-                    txTermino.setText("");
-
-                    lstPedidos.updateUI();
-                } else {
-                    txMesa.setText(""); //se o pedido estiver fechado, mostra mensagem de erro
-                    txStatus.setText("");
-                    txStatus.setEnabled(false);
-                    txAbertura.setText("");
-                    txTermino.setText("");
-                    JOptionPane.showMessageDialog(null, "O pedido está fechado, não pode ser editado");
-                }
-            }
-        });*/
         lstPedidos.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
@@ -283,7 +271,93 @@ class JanelaPedido extends JFrame {
                 }
             }
     
-     public void arquivoPedidos() {
+    public void LerArquivo(){ 
+            
+        Path caminho = Paths.get("/home/raiza/Transferências/file.txt");
+        try{
+            byte[] texto = Files.readAllBytes(caminho);
+            String leitura = new String(texto);
+            JOptionPane.showMessageDialog(null, leitura);
+    }
+        catch(Exception erro){
+        
+        }
+    }
+    
+/*    public List<Pedido> retornarPedido() throws Exception{
+        String linha = "";
+        
+       String mesa = "";
+       String status = "";
+       String abertura = "";
+       String fechamento = "";
+       String itens = "";
+        
+        Pedido pedido = null;
+        String [] linhaArquivo;
+        List<Pedido> listaPedido = new ArrayList<>();
+        
+        try{
+            File Arquivo = new File ("/home/raiza/Transferências/file.txt");
+            FileInputStream FI = new FileInputStream(Arquivo);
+            Scanner SC = new Scanner(FI);
+            
+            while(SC.hasNext()){
+            
+            pedido = new Pedido();
+            
+            
+            
+            linha = SC.nextLine();
+            linhaArquivo = linha.split(",");
+            
+            
+            
+            mesa = linhaArquivo[0];
+            status = linhaArquivo[1];
+            abertura = linhaArquivo[2];
+            fechamento = linhaArquivo[3];
+            
+            
+           // itens = linhaArquivo[4];
+            
+            pedido.setMesa(Integer.parseInt(mesa));
+            pedido.setStatus(Boolean.parseBoolean(status));
+            pedido.setData(Long.parseLong(abertura));
+            SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");            
+            Calendar c = Calendar.getInstance();            
+            c.setTime(dateFormat.parse(fechamento));            
+            Date dataFechamento = c.getTime();            
+            pedido.setTermino(dataFechamento);
+            
+           // pedido.setItens(itens);
+            
+            listaPedido.add(pedido);
+            
+            
+            }
+            return listaPedido;
+        }
+        catch (Exception ex){
+            throw new Exception (ex);
+            
+        }
+        
+    }
+    
+    public void inicializarTela() throws Exception{
+        try{
+            for (Pedido ped:retornarPedido()){
+               jComboBox.addItem(ped);
+            }
+        }
+        catch(Exception ex){
+            throw new Exception (ex);
+        }
+    }
+    */
+    
+   /*  public void arquivoPedidos() {
                 FileReader arq = null;
                 try {
                     String linha = "a";
@@ -295,7 +369,9 @@ class JanelaPedido extends JFrame {
                     while (linha != null) {
                         System.out.printf("%s\n", linha);
                         //lendo a segundo até a última
-                        linha = lerArq.readLine();                        
+                        linha = lerArq.readLine();  
+                       
+                        
                     }   arq.close();
                 } catch (FileNotFoundException ex) {
                     Logger.getLogger(JanelaPedido.class.getName()).log(Level.SEVERE, null, ex);
@@ -308,6 +384,6 @@ class JanelaPedido extends JFrame {
                         Logger.getLogger(JanelaPedido.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
-            }
+            }*/
 }
 

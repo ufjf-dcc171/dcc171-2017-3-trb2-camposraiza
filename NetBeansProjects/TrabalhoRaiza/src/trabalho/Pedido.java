@@ -13,10 +13,10 @@ class Pedido {
 
     private int mesa;    
     private Long data;
-    private Long termino;
+    private Date termino;
     private boolean status;
     private List<ItemPedido> itens;
-    private StringBuilder descricao = new StringBuilder();
+   // private StringBuilder descricao = new StringBuilder();
 
     public Pedido() {
 
@@ -26,13 +26,12 @@ class Pedido {
         this.mesa = mesa;
         this.data = data;
         this.status = true;
-        Long termino;
         this.termino = null;
         this.itens = new ArrayList<>();
-        this.descricao.append("Descrição do Pedido");
+      //  this.descricao.append("Descrição do Pedido");
     }
 
-    public List<ItemPedido> getItens() {
+        public List<ItemPedido> getItens() {
         return itens;
     }
 
@@ -56,11 +55,11 @@ class Pedido {
         this.data = data;
     }
 
-    public Long getTermino() {
+    public Date getTermino() {
         return termino;
     }
 
-    public void setTermino(Long termino) {
+    public void setTermino(Date termino) {
         this.termino = termino;
     }
 
@@ -74,7 +73,15 @@ class Pedido {
 
     public void adicionaItem(Item item, int quantidade) {
         itens.add(new ItemPedido(item, this, quantidade));       
-
+    }
+    
+    public void removeItem(Item item) {
+        for (ItemPedido i : itens) {
+            if (i.getItem() == item) {
+                itens.remove(i);
+                return;
+            }
+        }
     }
 
     @Override
@@ -87,16 +94,17 @@ class Pedido {
         } 
                
       
-        String detalhePedido = "Pedido{" + "mesa= " + mesa + ", status= " + statusConvertido + ", abertura= " + new Date(data)+ " término= " + termino + '}';
+        String detalhePedido = "Pedido{" + "mesa= " + mesa + ", status= " + statusConvertido + ", abertura= " + new Date(data);
+        
+        if (termino != null) {
+            detalhePedido += ", término= " + termino.toString();
+        }
         
         for (ItemPedido p : this.itens) {
             detalhePedido += System.lineSeparator() + "   - " + p.getItem().getNome() + "(" + p.getQuantidade() + ")";
         }
-        return detalhePedido;
+        return detalhePedido + "}";
     }
-    
-
-    
  
  
 
